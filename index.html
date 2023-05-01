@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+a {
+	color: blue;
+}
+a:hover {
+	color: red;
+}
+div#controlPane {
+	margin: auto auto 20px;
+}
+div#controlPane>a {
+	margin: auto 0px auto 10px;
+	text-decoration: none;
+}
+div#controlPane>a:last-of-type {
+  margin-right: 10px;
+}
+div#controlPane>a::after {
+	content: " ";
+	text-decoration: none;
+}
+div#themes {
+}
+div.theme {
+	display: flex;
+	flex-wrap: wrap;
+}
+div.theme>div {
+	border-radius: 10px;
+	margin: auto 0px 20px 20px;
+	flex: 1 1 auto;
+	width: 1px;
+	height: 100px;
+}
+div.theme>div:first-child {
+	flex: 1 0 100%;
+	margin: 20px auto auto;
+	height: auto;
+}
+div.theme>div:last-child {
+	margin-right: 20px;
+}
+</style>
+<script>
+"use strict";
+
+// The list of 22 colors were taken from https://sashamaps.net/docs/resources/20-colors/
+const CommonColor22=new Array(
+	"black,#000000",
+	"gray,#A9A9A9",
+	"white,#FFFFFF",
+	"magenta,#F032E6",
+	"purple,#911EB4",
+	"lavender,#DCBEFF",
+	"navy,#000075",
+	"blue,#4363D8",
+	"teal,#469990",
+	"cyan,#42D4F4",
+	"green,#3CB44B",
+	"mint,#AAFFC3",
+	"lime,#BFEF45",
+	"olive,#808000",
+	"yellow,#FFE119",
+	"beige,#FFFAC8",
+	"brown,#9A6324",
+	"orange,#F58231",
+	"apricot,#FFD8B1",
+	"maroon,#800000",
+	"red,#E6194B",
+	"pink,#FABED4"
+);
+
+const HTMLColor16=new Array(
+	"white,#FFFFFF",
+	"yellow,#FFFF00",
+	"fuchsia,#FF00FF",
+	"red,#FF0000",
+	"silver,#C0C0C0",
+	"gray,#808080",
+	"olive,#808000",
+	"purple,#800080",
+	"maroon,#800000",
+	"aqua,#00FFFF",
+	"lime,#00FF00",
+	"teal,#008080",
+	"green,#008000",
+	"blue,#0000FF",
+	"navy,#000080",
+	"black,#000000",
+);
+
+const HTMLColor140=new Array(
+	// Pink colors
+	"medium violet red,#C71585",
+	"deep pink,#FF1493",
+	"pale violet red,#DB7093",
+	"hot pink,#FF69B4",
+	"light pink,#FFB6C1",
+	"pink,#FFC0CB",
+	// Red colors
+	"dark red,#8B0000",
+	"red,#FF0000",
+	"firebrick,#B22222",
+	"crimson,#DC143C",
+	"indian red,#CD5C5C",
+	"light coral,#F08080",
+	"salmon,#FA8072",
+	"dark salmon,#E9967A",
+	"light salmon,#FFA07A",
+	// Orange colors
+	"orange red,#FF4500",
+	"tomato,#FF6347",
+	"dark orange,#FF8C00",
+	"coral,#FF7F50",
+	"orange,#FFA500",
+	// Yellow colors
+	"dark khaki,#BDB76B",
+	"gold,#FFD700",
+	"khaki,#F0E68C",
+	"peach puff,#FFDAB9",
+	"yellow,#FFFF00",
+	"pale goldenrod,#EEE8AA",
+	"moccasin,#FFE4B5",
+	"papaya whip,#FFEFD5",
+	"light goldenrod yellow,#FAFAD2",
+	"lemon chiffon,#FFFACD",
+	"light yellow,#FFFFE0",
+	// Brown colors
+	"maroon,#800000",
+	"brown,#A52A2A",
+	"saddle brown,#8B4513",
+	"sienna,#A0522D",
+	"chocolate,#D2691E",
+	"dark goldenrod,#B8860B",
+	"peru,#CD853F",
+	"rosy brown,#BC8F8F",
+	"goldenrod,#DAA520",
+	"sandy brown,#F4A460",
+	"tan,#D2B48C",
+	"burlywood,#DEB887",
+	"wheat,#F5DEB3",
+	"navajo white,#FFDEAD",
+	"bisque,#FFE4C4",
+	"blanched almond,#FFEBCD",
+	"cornsilk,#FFF8DC",
+	// Purple, violet, and magenta colors
+	"indigo,#4B0082",
+	"purple,#800080",
+	"dark magenta,#8B008B",
+	"dark violet,#9400D3",
+	"dark slate blue,#483D8B",
+	"blue violet,#8A2BE2",
+	"dark orchid,#9932CC",
+	"fuchsia,#FF00FF",
+	"magenta,#FF00FF",
+	"slate blue,#6A5ACD",
+	"medium slate blue,#7B68EE",
+	"medium orchid,#BA55D3",
+	"medium purple,#9370DB",
+	"orchid,#DA70D6",
+	"violet,#EE82EE",
+	"plum,#DDA0DD",
+	"thistle,#D8BFD8",
+	"lavender,#E6E6FA",
+	// Blue colors
+	"midnight blue,#191970",
+	"navy,#000080",
+	"dark blue,#00008B",
+	"medium blue,#0000CD",
+	"blue,#0000FF",
+	"royal blue,#4169E1",
+	"steel blue,#4682B4",
+	"dodger blue,#1E90FF",
+	"deep sky blue,#00BFFF",
+	"cornflower blue,#6495ED",
+	"sky blue,#87CEEB",
+	"light sky blue,#87CEFA",
+	"light steel blue,#B0C4DE",
+	"light blue,#ADD8E6",
+	"powder blue,#B0E0E6",
+	// Cyan colors
+	"teal,#008080",
+	"dark cyan,#008B8B",
+	"light sea green,#20B2AA",
+	"cadet blue,#5F9EA0",
+	"dark turquoise,#00CED1",
+	"medium turquoise,#48D1CC",
+	"turquoise,#40E0D0",
+	"aqua,#00FFFF",
+	"cyan,#00FFFF",
+	"aquamarine,#7FFFD4",
+	"pale turquoise,#AFEEEE",
+	"light cyan,#E0FFFF",
+	// Green colors
+	"dark green,#006400",
+	"green,#008000",
+	"dark olive green,#556B2F",
+	"forest green,#228B22",
+	"sea green,#2E8B57",
+	"olive,#808000",
+	"olive drab,#6B8E23",
+	"medium sea green,#3CB371",
+	"lime green,#32CD32",
+	"lime,#00FF00",
+	"spring green,#00FF7F",
+	"medium spring green,#00FA9A",
+	"dark sea green,#8FBC8F",
+	"medium aquamarine,#66CDAA",
+	"yellow green,#9ACD32",
+	"lawn green,#7CFC00",
+	"chartreuse,#7FFF00",
+	"light green,#90EE90",
+	"green yellow,#ADFF2F",
+	"pale green,#98FB98",
+	// White colors
+	"misty rose,#FFE4E1",
+	"antique white,#FAEBD7",
+	"linen,#FAF0E6",
+	"beige,#F5F5DC",
+	"white smoke,#F5F5F5",
+	"lavender blush,#FFF0F5",
+	"old lace,#FDF5E6",
+	"alice blue,#F0F8FF",
+	"seashell,#FFF5EE",
+	"ghost white,#F8F8FF",
+	"honeydew,#F0FFF0",
+	"floral white,#FFFAF0",
+	"azure,#F0FFFF",
+	"mint cream,#F5FFFA",
+	"snow,#FFFAFA",
+	"ivory,#FFFFF0",
+	"white,#FFFFFF",
+	// Gray and black colors
+	"black,#000000",
+	"dark slate gray,#2F4F4F",
+	"dim gray,#696969",
+	"slate gray,#708090",
+	"gray,#808080",
+	"light slate gray,#778899",
+	"dark gray,#A9A9A9",
+	"silver,#C0C0C0",
+	"light gray,#D3D3D3",
+	"gainsboro,#DCDCDC"
+);
+
+// Themes definitions
+const themes={};
+
+themes['Brands']=new Array(
+	"https://digitalsynopsis.com/design/brand-colors/",
+	"Adidas,#000000#BE0027#CF8D2E#E4E932#2C9F45#371777#52325D#511378",
+	"Adobe,#FF0000#FBB034#FFDD00#C1D82F#00A4E4#8A7967#6A737B",
+	"Airbnb,#FD5C63",
+	"Airbus,#74D2E7#48A9C5#0085AD#8DB9CA#4298B5#005670#00205B#009F4D#84BD00#EFDF00#FE5000#E4002B#DA1884#A51890#0077C8#008EAA",
+	"Alibaba,#FF6A00",
+	"Amazon,#FF9900#146EB4",
+	"American Express,#002663#4D4F53",
+	"Android,#A4C639",
+	"AT&T,#00A8E0",
+	"Baidu,#DE0F17#2529D8",
+	"Barclays,#00AEEF#00395D",
+	"Beats by Dre,#E01F3D",
+	"Behance,#1769FF",
+	"Best Buy,#003B64#FFF200",
+	"Bing,#FFB900#505050#A3A3A3",
+	"Blackberry,#005387#8CB811#FDB813#88ACA1#000000#788CB6#A1A1A4#8F8F8C",
+	"Boeing,#0033A1",
+	"British Airways,#075AAA#EB2226#01295C#EFE9E5#ACA095#B9CFED#A7A9AC",
+	"Burger King,#EC1C24#FDBD10#0066B2#ED7902",
+	"BuzzFeed,#EE3322",
+	"Cadbury,#472F92",
+	"Canon,#BC0024#000000",
+	"Cartoon Network,#00AEEF#ED008C#FFF000#000000",
+	"CNN,#CC0000#000000#282828#464646",
+	"Coca-Cola,#ED1C16",
+	"Dell,#0085C3#7AB800#F2AF00#DC5034#CE1126#B7295A#6E2585#71C6C1#5482AB#009BBB#444444#EEEEEE",
+	"Delta Airlines,#C8102E#862633#003A70",
+	"DHL,#BA0C2F#FFCD00#C9C9C9",
+	"Dominos',#0B648F#E21737",
+	"Dribbble,#444444#EA4C89#8ABA56#FF8833#00B6E3#9BA5A8",
+	"Dropbox,#007EE5#7B8994#47525D#3D464D",
+	"eBay,#E53238#0064D2#F5AF02#86B817",
+	"Ericsson,#002561",
+	"ESPN,#FF0033",
+	"Facebook,#3B5998",
+	"Fedex,#4D148C#FF6600",
+	"Fendi,#F9B949",
+	"Ferrari,#E32119",
+	"Fiat,#96172E#6D2D41",
+	"Firefox,#E66000#FF9500#FFCB00#00539F#0095DD#331E54#002147",
+	"Flipboard,#E12828",
+	"Ford,#1C396D",
+	"GoDaddy,#7DB701#FF8A00",
+	"Google,#4285F4#34A853#FBBC05#EA4335",
+	"Heineken,#008200#205527#FF2B00#C3C3C3",
+	"Home Depot,#F96302",
+	"HP,#0096D6#D7410B",
+	"HSBC,#DB0011",
+	"IBM,#006699",
+	"IKEA,#FFCC00#003399",
+	"Instagram,#405DE6#5851DB#833AB4#C13584#E1306C#FD1D1D#F56040#F77737#FCAF45#FFDC80",
+	"Intel,#0F7DC2",
+	"iOS,#5FC9F8#FECB2E#FD9426#FC3158#147EFB#53D769#FC3D39#8E8E93",
+	"JBL,#FF6600",
+	"Kickstarter,#2BDE73#0F2105",
+	"KitKat,#D70021",
+	"KLM,#00A1E4",
+	"Lamborghini,#DDB321",
+	"LEGO,#F6EC35#D11013#000000",
+	"LinkedIn,#0077B5#000000#313335#86888A#CACCCE#00A0DC#8D6CAB#DD5143#E68523",
+	"London Underground,#000099#CC3333",
+	"Mastercard,#CC0000#FF9900#000066",
+	"McDonald's,#BF0C0C#E76A05#FFC600#47BC00#05007B#9748A8#2BB3F3#865200",
+	"Microsoft,#F65314#7CBB00#00A1F1#FFBB00",
+	"Motorola,#5C92FA",
+	"NASA,#FC3D21#0B3D91",
+	"National Geographic,#FFCC00#000000",
+	"NBC,#E1AC26#DC380F#9F0812#6347B2#368DD5#70AF1E#7E887A",
+	"Netflix,#E50914#221F1F#F5F5F1",
+	"NFL,#013369#D50A0A",
+	"Nokia,#124191",
+	"NVIDIA,#76B900",
+	"Olympus,#08107B#DFB226#777777",
+	"Opera,#CC0F16#9C9E9F",
+	"Oracle,#FF0000#000000#7F7F7F",
+	"Panasonic,#0F58A8#000000",
+	"PayPal,#003087#009CDE#012169",
+	"Pepsi,#E32934#004883",
+	"Pfizer,#0093D0#000000#616365#00AEEF#D6006E#75D1E0#7DBA00#CC292B#00A950#F8971D#F7D417#4A245E#F26649",
+	"Philips,#0E5FD8",
+	"Pinterest,#BD081C",
+	"Pizza Hut,#EE3124#00A160#FFC425",
+	"PlayStation,#003087",
+	"Puma,#000000#44403F#696965#BA2026#AE946D",
+	"Qantas Airways,#E0001B",
+	"Quora,#A82400",
+	"Reddit,#FF4500#5F99CF#CEE3F8",
+	"Rolls-Royce,#680021#FFFAEC#939598#000000",
+	"Samsung,#1428A0#75787B#0689D8#FFC600#FF6900#E4002B#C800A1#685BC7#0057B8#00A9E0#009CA6#00B140",
+	"Skype,#00AFF0",
+	"SlideShare,#0077B5",
+	"Snapchat,#FFFC00",
+	"Sony,#000000#7C8285#BFBDB0#B1B134#BBD634#DBE3B6#B2C8BD#165B65#697D99#96B8DB#00A4E8#A4DBDB#FDD666#DC9018#E31A22#DF8F2D#B24F3F#B51F29#F58268#F4979C",
+	"Spotify,#1DB954#191414",
+	"Starbucks,#00704A",
+	"Subway,#489E3B#FABD42#CD0A20",
+	"Target,#CC0000",
+	"TED,#E62B1E",
+	"Tesla,#CC0000",
+	"The Ritz-Carlton,#006B95#4F5B65#B3812A#A01A1F",
+	"T-Mobile,#E20074",
+	"TripAdvisor,#00AF87",
+	"Tumblr,#35465C",
+	"Twitter,#1DA1F2#14171A#657786#AAB8C2#E1E8ED#F5F8FA",
+	"Uber,#09091A#C0C0C8#1FBAD6",
+	"UPS,#351C15#FFB500#64A70B",
+	"Verizon,#FF0000#F2F2F2#3285DC",
+	"Vimeo,#162221#1AB7EA",
+	"Virgin Media,#C3092D#222221",
+	"Visa,#1A1F71#F7B600",
+	"Vodafone,#E60000#4A4D4E#9C2AA0#5E2750#00B0CA#007C92#A8B400#FECB00#EB9800#000000",
+	"Walmart,#007DC6#79B9E7#F47421#76C143#FFC120#E7F0F7#F2F8FD#222222#444444",
+	"WhatsApp,#075E54#128C7E#25D366#DCF8C6#34B7F1#ECE5DD",
+	"Wikipedia,#000000#636466#939598#C7C8CA",
+	"Windows,#0078D7#002050#FFB900#D83B01#E81123#B4009E#5C2D91#008272#107C10",
+	"XBOX,#52B043",
+	"Yahoo,#410093",
+	"Yelp,#AF0606",
+	"YouTube,#FF0000#282828",
+	"Zomato,#CB202D#2D2D2D#F4F4F2"
+);
+
+themes['ColorHex']=new Array(
+	"http://www.color-hex.com/color-palettes/",
+	"Android Lollipop,#009688#35A79C#54B2A9#65C3BA#83D0C9",
+	"Anime Skin Tones,#FFE9DC#FCE9DB#E0A899#DFA290#C99789",
+	"Beach,#96CEB4#FFEEAD#FF6F69#FFCC5C#88D8B0",
+	"Beach Towels,#FE4A49#2AB7CA#FED766#E6E6EA#F4F4F8",
+	"Beautiful Blues,#011F4B#03396C#005B96#6497B1#B3CDE0",
+	"Blue Grey,#6E7F80#536872#708090#536878#36454F",
+	"Blueberry Basket,#FFFFFF#D0E1F9#4D648D#283655#1E1F26",
+	"Cappuccino,#4B3832#854442#FFF4E6#3C2F2F#BE9B7B",
+	"Facebook,#3B5998#8B9DC3#DFE3EE#F7F7F7#FFFFFF",
+	"Five Shades of Grey,#EEEEEE#DDDDDD#CCCCCC#BBBBBB#AAAAAA",
+	"Google Colors,#008744#0057E7#D62D20#FFA700#FFFFFF",
+	"Gray Blue,#3385C6#4279A3#476C8A#49657B#7F8E9E",
+	"Grey Lavender Colors,#D2D4DC#AFAFAF#F8F8FA#E5E6EB#C0C2CE",
+	"Greyso,#6F7C85#75838D#7E8D98#8595A1#8C9DA9",
+	"Light Pink,#EEE3E7#EAD5DC#EEC9D2#F4B6C2#F6ABB6",
+	"Metro UI Colors,#D11141#00B159#00AEDB#F37735#FFC425",
+	"Moonlight Bytes 6,#4A4E4D#0E9AA7#3DA4AB#F6CD61#FE8A71",
+	"Never Doubt,#EEEEEE#DDDDDD#CCCCCC#BBBBBB#29A8AB",
+	"Never Dreamed Of This,#FFF6E9#FFEFD7#FFFEF9#E3F0FF#D2E7FF",
+	"Number 3,#2A4D69#4B86B4#ADCBE3#E7EFF6#63ACE5",
+	"Office Room 2,#84C1FF#ADD6FF#D6EAFF#EAF4FF#F8FBFF",
+	"Pastel Rainbow,#A8E6CF#DCEDC1#FFD3B6#FFAAA5#FF8B94",
+	"Pastellea,#FE9C8F#FEB2A8#FEC8C1#FAD9C1#F9CAA7",
+	"Pinks,#FF77AA#FF99CC#FFBBEE#FF5588#FF3377",
+	"Program Catalog,#EDC951#EB6841#CC2A36#4F372D#00A0B0",
+	"Purple Skyline,#2E003E#3D2352#3D1E6D#8874A3#E4DCF1",
+	"Rainbow Dash,#EE4035#F37736#FDF498#7BC043#0392CF",
+	"Shades of White,#FAF0E6#FFF5EE#FDF5E6#FAF0E6#FAEBD7",
+	"She,#DEC3C3#E7D3D3#F0E4E4#F9F4F4#FFFFFF",
+	"Skin Tones,#8D5524#C68642#E0AC69#F1C27D#FFDBAC",
+	"So Many Lost Songs,#051E3E#251E3E#451E3E#651E3E#851E3E",
+	"Space Gray,#343D46#4F5B66#65737E#A7ADBA#C0C5CE",
+	"The Armor Falls,#BFD6F6#8DBDFF#64A1F4#4A91F2#3B7DD8",
+	"The Water Bearer,#EBF4F6#BDEAEE#76B4BD#58668B#5E5656",
+	"White,#FDFBFB#FBFDFB#FDFDFF#FDF9F9#FDFBFB",
+	"Wrist Skin,#E3C9C9#F4E7E7#EEDBDB#CECBCB#CBDADB"
+);
+
+themes['ColoursCafe']=new Array(
+	"https://www.instagram.com/colours.cafe/",
+	"1,#7F58AF#64C5EB#E84D8A#FEB326",
+	"2,#FB938F#F2CAC8#C36B85#FDBB75",
+	"3,#674A40#50A3A4#FCAF38#F95335",
+	"4,#3A3E98#5256BC#527CBC#4AB1D8",
+	"5,#575A6C#B4C540#E0E2D2#3686C9",
+	"6,#EE6A59#3A3F58#F9AC67#ECE6CD",
+	"7,#4535AA#D6D1F5#ED639E#B05CBA",
+	"8,#1A2C79#E80566#FF8D68#F4EABC",
+	"9,#842D73#EE316B#FFB137#FBDFB6",
+	"10,#8DBD61#6F459E#F66F8D#FFB643",
+	"11,#6F1D57#E8789A#FCBD8B#EDDAB9",
+	"12,#662377#A82973#EF5064#FC867D",
+	"13,#FF662A#FFA22A#82AC26#4F3F84",
+	"14,#584053#8DC6BF#FCBC66#F97B4F",
+	"15,#ED6146#56407F#B569AF#7FB3EE",
+	"16,#9A5299#CC65A9#E687B8#E7A9C6",
+	"17,#EAD7C1#444B8E#A84A7F#F6948E",
+	"18,#282726#54504C#86817C#D6CAB0",
+	"19,#9AE1E2#332851#CA3074#F6C667",
+	"20,#DC5990#FF5978#FFC876#F2EAE3",
+	"21,#7C50B9#E267AA#FF6F9B#FFC36D",
+	"22,#874356#C65D7B#F68989#F6E7D8",
+	"23,#FFCB3E#FB836F#C1549C#7E549F",
+	"24,#F3DECA#FA9483#2D4057#4097AA",
+	"25,#524582#367BC3#38BFA7#8FE1A2",
+	"26,#C14364#FF916B#EEE2D1#2CA18C",
+	"27,#0FBDE9#9D47B6#E6639B#2F3BAD",
+	"28,#4E2E54#954F75#F8DAC3#F8F4E9",
+	"29,#FF9F97#FFCFCB#FCF4EC#98B6EC",
+	"30,#E3DD34#78496B#F0527F#E0EFF0",
+	"31,#365367#FFBAA2#F9F4E6#F494AB",
+	"32,#FB9795#FFE9DF#7C5E8C#B0E7EA",
+	"33,#804372#FA8771#F7F2DA#CADD64",
+	"34,#6C8A9B#E6E6E4#F9F5EF#FD6574",
+	"35,#344D77#C55A82#FFD34B#FF7241",
+	"36,#1D3752#214D72#2C7695#50BFC3",
+	"37,#ECA39D#2653AF#18288D#FFC13D",
+	"38,#572F5E#C668AA#FB98B8#F7F0E0",
+	"39,#2B463C#688F4E#B1D182#F4F1E9",
+	"40,#7FA7B8#F7EFED#F1485B#33546D",
+	"41,#AD4560#FF9994#F6F1DD#41BFDA"
+);
+
+themes['CoSchedule']=new Array(
+	"https://coschedule.com/",
+	"Amethyst in Ireland,#61355F#9B4980#AAD3E0#0D9AA2#045F6B",
+	"Be Mine,#FACEE1#F5A1BC#E15987#E61B44#8B1821",
+	"Beach House,#414F67#85A9A2#AED9D8#F9F1E6#F2C494",
+	"Black Forest Apple,#ED1C24#B91E45#65082F#0C1629#DEC5AC",
+	"Black Ice,#141016#2D2E3B#696B78#C5B1BD#B7C2D5",
+	"Blue Oyster Cult,#2D4E76#99BCDD#C4E5EF#F3FAFA#BBABD0",
+	"Bluegrass,#1E5670#4198B9#6BB3C0#91CFC9#CDE8F3",
+	"Clean Laundry,#FFFFFF#F7F8FA#EFEEEE#D6D7D9#9DA3A6",
+	"Denmark Tulip Fields,#B8335B#D7A8B2#C4D4CA#809E73#31401C",
+	"Fall Sunset,#9F693E#D1A982#81555C#97472F#471D21",
+	"Five Fruity Flavors,#F26A21#EE8B22#EFB964#F5DEBC#EA5E51",
+	"Giant Orange,#F58020#BC6236#7E706C#B4BCCA#EAEBE4",
+	"Hidden Cave,#0C0D10#222D33#334F5B#829997#D7E1E0",
+	"It is not Winter anymore,#F7AC1A#FFC808#C7C7C9#E4E4E2#EAECEA",
+	"Lavender Royal Throne,#E3C7D8#B58FB5#834A6C#512E47#23212C",
+	"Luxury,#E2D59E#C79E53#EFECDF#414042#231F20",
+	"Mountain Range,#BCAE90#97795D#4E6470#366F9B#072139",
+	"Orange Mint,#EE8B22#F7AC1A#F4E4D1#CFE4C2#AFDAB5",
+	"Pristine Pallete,#FFFFFF#E7E8E2#ECE3DB#D9E4E6#6E6E73",
+	"Quiet Landscape,#D4CFB8#BCAE90#7F684A#C1BDBA#E8E9EC",
+	"Relic,#C1C758#607131#643E46#DFB19A#CCD1CB",
+	"Rich Emerald,#E2D59E#C79E53#425143#2B736F#96ABA4",
+	"Safari,#00997F#95D1AD#8CA581#B1D238#E8E613",
+	"Saturday Morning,#A16E8A#643F5A#CFBEB7#F1EAD7#E99A9A",
+	"Seaside Paradise,#FFFFFF#F1F2ED#CFC7B9#89847E#454C58",
+	"Soft Darkness,#0C0D10#6D6E71#E8DAD4#F4F0EC#E8E8EA",
+	"Starry Night,#EFECDF#C4A872#C79E53#444253#141A27",
+	"Summer Splendor,#B22930#EA5E51#F9BCBD#F0F5EE#A4C196",
+	"Summertime,#E67B79#F7CECE#EEC9BC#E1F1EA#91C7C2",
+	"Sunflower Bliss,#F6E78B#FFC808#F78F1E#009979#007A67",
+	"Swimming Hole,#068C49#8ECA76#9BD3B2#3C6388#0B1420",
+	"The Light in Space,#FFC20E#F58020#D7E2DE#465867#212A32",
+	"Under the Coral,#A31E21#EA5E51#94C8D8#35838D#032E34"
+);
+
+themes['DumindaPerera']=new Array(
+	"https://www.behance.net/duminda",
+	"1,#F8B195#F67280#C06C84#6C5B7B#355C7D",
+	"2,#99B898#FECEAB#FF847C#E84A5F#2A363B",
+	"3,#A8E6CE#DCEDC2#FFD3B5#FFAAA6#FF8C94",
+	"4,#A8A7A7#CC527A#E8175D#474747#363636",
+	"5,#A7226E#EC2049#F26B38#F7DB4F#2F9599",
+	"6,#E1F5C4#EDE574#F9D423#FC913A#FF4E50",
+	"7,#E5FCC2#9DE0AD#45ADA8#547980#594F4F",
+	"8,#FE4365#FC9D9A#F9CDAD#C8C8A9#83AF9B"
+);
+
+themes['EbtihajKhan']=new Array(
+	"https://www.behance.net/Ebtihaj",
+	"1,#EE4540#C72C41#801336#510A32#2D142C",
+	"2,#8FB9A8#FEFAD4#FCD0BA#F1828D#765D69",
+	"3,#FCBB6D#D8737F#AB6C82#685D79#475C7A",
+	"4,#F18C8E#F0B7A4#F1D1B5#568EA6#305F72",
+	"5,#CC2A49#F99E4C#F36F38#EF4648#582841",
+	"6,#F26627#F9A26C#EFEEEE#9BD7D1#325D79",
+	"7,#DDA5B6#F2CC8C#F1E6C1#3F6A8A#4D5E72",
+	"8,#EF3D59#E17A47#EFC958#4AB19D#344E5C"
+);
+
+themes['OceanUI']=new Array(
+	"https://www.instagram.com/ocean.ui/",
+	"Amphibian,#3E54D3#4F80E2#15CDCA#4FE0B6",
+	"Beachside,#3B7097#75BDE0#A9D09E#F6E2BC",
+	"Candle,#FB8C6F#73607D#C1B9AE#FDC664",
+	"Caribbean,#53D2DC#3196E2#FF826C#FFC05F",
+	"Cove,#006BBB#30A0E0#FFC872#FFE3B3",
+	"Cranberry,#DD4470#FE72A9#FFC872#FCE4BF",
+	"Embers,#41436A#984063#F64668#FE9677",
+	"Fairy,#A163F7#6F88FC#45E3FF#FF7582",
+	"Four Seasons,#2E9599#F7DC68#F46C3F#A7226F",
+	"Fruit Basket,#E984A2#B9CC95#F8D49B#F8E6CB",
+	"Glassdoor,#3D9A8B#2EB19F#63C2D2#B7EDFF",
+	"Haze,#0F6BAE#248BD6#83B8FF#C6CDFF",
+	"Hot,#C61063#F50057#FF4081#FF80AB",
+	"Kermit,#75BDE0#78D1D2#97DBAE#CDE4AD",
+	"Kiwi,#028174#0AB68B#92DE8B#FFE3B3",
+	"Lavendar,#C2518B#5E4DAA#F47DBA#964EC2",
+	"Matte,#293556#2E4583#3E60C1#5983FC",
+	"Melon,#97DBAE#C3E5AE#F1E1A6#F4BBBB",
+	"Ocean,#345DA7#3B8AC4#4BB4DE#EFDBCB",
+	"Periwinkle,#9A9CEA#A2B9EE#A2DCEE#ADEEE2",
+	"Petals,#588C7E#689581#ACBC8A#DDD7AC",
+	"Petals2,#4C4141#EF534F#FB7E96#FFCDD2",
+	"Pink LA,#7827E6#8D39EC#AA4FF6#EA80FC",
+	"Popsicle,#F3533A#FA9F42#8AD879#5ACFC9",
+	"Rose,#CC184E#E84575#F76CAE#FFE3B3",
+	"Scales,#7339AB#625AD8#1F9CE4#88F4FF",
+	"Sea Side,#26648E#4F8FC0#53D2DC#FFE3B3",
+	"Stormi,#3B7097#4A8DB7#75BDE0#A2E2F8",
+	"Strawberry,#DD4470#FE72A9#C6DF76#FFE3B3",
+	"Strawberry2,#F14666#EE8980#FFCDAA#9CB898",
+	"Sunrise,#5F236B#BE375F#ED8554#F5EB6D",
+	"Sunrise2,#75BDE0#F8D49B#F8BC9B#F89B9B",
+	"Sunset,#355C7D#725A7A#C56C86#FF7582",
+	"Sunset2,#C848B9#F962A7#FD836D#FFBA69",
+	"Traverse City,#5193B3#62C4C3#F8D49B#F8E6CB",
+	"Turtle,#E5EFC1#A2D5AB#39AEA9#557B83",
+	"Velvet,#313866#50409A#964EC2#FF7BBF",
+	"Viola,#752092#C957BC#FFC872#FFE3B3",
+	"Warming,#C5211C#E4443F#F59B65#F7BA79"
+);
+
+themes['SchemeColor']=new Array(
+	"https://www.schemecolor.com/",
+	"1,#8865FF#FF6FA5#FB9EC4#FFDAC0#FFC7BA",
+	"2,#3A0751#F2C85B#FBA465#F86E51#EE3E38#D1193E",
+	"3,#422680#341671#280659#660F56#AE2D68#F54952",
+	"4,#FFCC98#FFE6B6#FFF7D9#53CCEC#1974D3#000181",
+	"5,#6D8700#9DB300#BAC600#C8D741#D8E46B#E2F1A0",
+	"6,#2F3180#1D1E4E#108690#FCCF14#FFE169",
+	"7,#0B1354#165BAA#A155B9#F765A3#FFA4B6#F9D1D1",
+	"8,#000000#4B4B4B#C4C4C4#FF9001#FF4200",
+	"9,#F6BB93#FBA490#FB8985#FC666F#B83253#651B40",
+	"10,#034EA2#303A99#5E2390#8B0D88#C00384#F10080",
+	"11,#1873D3#1237A1#00017A#FFDE00#FFB900",
+	"12,#3B1568#F5AC4E#DD4224#BB280F#940700",
+	"13,#6DFFE7#55BEC0#394F6B#1C2341#12182B",
+	"14,#BE0D73#E35874#FEB97D#FC9E5B#F96E61#F94069",
+	"15,#F25E74#FF8884#026178#0682A6#34A1C7",
+	"16,#9A77CF#543884#262254#A13670#EC4176#FFA45E",
+	"17,#14F2E0#41C8E5#6E9EEB#9A75F0#C74BF6#F320FA",
+	"18,#070E13#183040#F24F09#BF3612#731C13",
+	"19,#3921B3#3A32BF#5073D9#58A1D9#F2E2AA#F2C070",
+	"20,#FFD08E#FFA874#FA7C5A#E3534C#A8234C#681740",
+	"21,#001932#003B64#00639B#0087CA#00ABE7#00DDF9",
+	"22,#022E39#044855#793F4E#C0424E#D94B58",
+	"23,#FFBAFF#DE87FF#A455FF#681DFF#1000CA#000098",
+	"24,#E84258#FD8060#FEE191#B0D8A4#8281A0",
+	"25,#008081#009192#1FA2A5#388497#367589",
+	"26,#040F57#12348D#9043C3#D75CA2#BD2B48#E79556",
+	"27,#FF877D#FFC4AE#EDE7D3#FFD5A6#C2CF67",
+	"28,#28430A#507B00#95C22B#A7D930#7B4425#63371E",
+	"29,#100C08#E42024#333333#262626#000000",
+	"30,#ECD1CD#E8B4B0#E796A0#246D82",
+	"31,#67D0DD#9FE481#F6E785#FAAFA5#DC95DD#A885EE",
+	"32,#881347#AC124A#C01E58#282F6C#151755#090839",
+	"33,#FBF017#F1C344#E79571#DE689F#D43ACC#CA0DF9",
+	"34,#0D2B68#15408C#F2A470#D98068#8C3331#681615",
+	"35,#2D3B41#FB6A75#F6BC00#F6D852#00C7B7",
+	"36,#C05095#8512A1#4D0D80#2F0E53#B63082",
+	"37,#681A0A#DA4239#8C2008#61180E",
+	"38,#E34A27#FEA655#FFD98E#566357#909473",
+	"39,#FE007E#FC3EAA#FF69CE#171717#050505",
+	"40,#80A66C#F2F2C5#F2A950#DD6761",
+	"41,#8312A5#720B98#561496#391E94#1D2791#0037A5",
+	"42,#2E3280#2E5FA5#F2B5A7#F29375",
+	"43,#CC333F#EB6841#EDC951#6A4A3C#00A0B0",
+	"44,#DF00FF#BF00FF#8A00FF#000000#1C1C1C",
+	"45,#2B2466#011844#FFD684#FFA37B#FF63A0",
+	"46,#0CAFA9#BED8CF#FBE7D3#FCCE8E#ED6F00#963F2D",
+	"47,#F77479#FABA5F#EFEB68#F15BA6#B447CC#8A3BC0"
+);
+
+themes['TheColourLab']=new Array(
+	"https://www.instagram.com/the.colour.lab/",
+	"Above the Clouds,#FDBE83#C8A3B5#2F4E68",
+	"Aerospace Blue,#807A7A#E2E1E6#2286A9",
+	"Atacama Desert,#4F3A41#9F5449#EB9762",
+	"Beach Hut,#D05146#DBC7B5#6091AB",
+	"Beach Vibes,#189AA7#21C4D3#F9ECE4",
+	"Brave the Elements,#DDE5E7#D4674C#67727E",
+	"Classic Teal,#13424C#218490#AE7C54",
+	"Coastal Waters,#386E72#95C5C8#F0C0AA",
+	"Cobalt Blue,#092147#1A488E#97B2DE",
+	"Copper Tones,#894329#12727D#FCB886",
+	"Crystal Clear Ocean,#1F94D4#7ED2DF#B5E5E6",
+	"Deep Blue,#022534#08546C#A0BACC",
+	"Desert Plain,#304655#B59283#E5D4CD",
+	"Early Morning Coffee,#482317#985836#BCB0A1",
+	"Exquisite Red,#111A21#A9081C#716B6D",
+	"Fairway Green,#1D3C26#578F53#EADFCE",
+	"Industrial Brick,#121B22#204254#B94A3E",
+	"Into the Wild,#808C97#7E8071#EDBC81#A76B56",
+	"Life is a Beach,#F6F0F0#60E3D5#0567A8",
+	"Mountain Vista,#F5F5F7#C1B6AC#A7B3C8",
+	"Natural Hues,#9A7787#E4AFB0#FED7BF",
+	"Neon Delight,#040B29#041746#F34DC3",
+	"Neon Lights,#101B37#E41376#01C8EE",
+	"Ocean Blue,#0D5C75#199FB1#A5D1E1",
+	"Open till Late,#1C1B4D#B80E65#1791B1",
+	"Pacific Dusk,#3C3846#4A4B7B#FDE9CC",
+	"Pink Sunset,#B78493#B15A4B#FDAB72",
+	"Red Mist,#DF643F#A73728#3D1F1D",
+	"Retro Sunset,#1F3095#96577F#FA8E44",
+	"SerenGeti Sunset,#593131#C5785A#FBBF7C",
+	"Summer Skies,#FD9047#AC5142#4D3532",
+	"Summer Vibe,#1998D3#41A592#F6CE4B",
+	"The Desert Sands,#515561#B28474#D8B199",
+	"Time for Adventure,#FDEA79#A8A355#4F4039",
+	"Under the Stars,#0B1320#394D4F#FEF9E6",
+	"Underground Station,#2D1E19#F8BE4F#E3EBED",
+	"Warm Light,#943B5E#D84E55#FDAB72"
+);
+
+themes['WolvusTechnology']=new Array(
+	"https://twitter.com/wolvustech",
+	"1,#EFE6D5#9DBEB7#E73213",
+	"2,#018558#BDE902#FEF031",
+	"3,#0C0E0C#D8323C#EAEBEA",
+	"4,#D7EAF3#77B5D9#14397D",
+	"5,#FF1700#FFA600#4D6910",
+	"6,#A0FEFB#494FC1#FD084A",
+	"7,#B72818#BC6022#E8C599",
+	"8,#FDE4E3#F282B4#EF415E"
+);
+
+function camelCase(s) {
+	return s.replace(/['"]/g,'').replace(/&/g,'n')
+		.split(/\W+/)
+		.map(a=>a.toLowerCase()==a?a.charAt(0).toUpperCase()+a.substring(1):a)
+		.join('');
+}
+
+function pascalCase(s) {
+	return s.replace(/['"]/g,'').replace(/&/g,'n')
+		.split(/\W+/)
+		.map((a,i)=>a.toLowerCase()==a&&i?a.charAt(0).toUpperCase()+a.substring(1):a)
+		.join('');
+}
+
+// We need to demystify some concepts before we define the following functions.
+// 1. RGB is a linear space and sRGB is a non-linear space.
+// 2. Web data are already sRGB, because we view and edit the data with a CRT or LCD directly.
+// 3. All image processing should be done within the linear RGB space.
+
+const Color=class {
+	constructor(c) {
+		// The RGB space is [0,1]^3
+		this._RGB=[0,0,0];
+		'RGB'.split('').forEach((e,i)=>{
+			Object.defineProperty(this._RGB,e,{
+				enumerable: true,
+				configurable: false,
+				get: ()=>this._RGB[i],
+				set: (v)=>{
+					this._RGB[i]=v;
+					this._refresh('RGB');
+				}
+			});
+		});
+		Object.seal(this._RGB);
+
+		// The sRGB space is [0,1]^3
+		this._SRGB=[0,0,0];
+		'RGB'.split('').forEach((e,i)=>{
+			Object.defineProperty(this._SRGB,e,{
+				enumerable: true,
+				configurable: false,
+				get: ()=>Math.round(this._SRGB[i]*255),
+				set: (v)=>{
+					this._SRGB[i]=v/255;
+					this._refresh('SRGB');
+				}
+			});
+		});
+		Object.seal(this._SRGB);
+
+		// The HSI space is [0,360)*[0,1]^2
+		this._HSI=[0,0,0];
+		'HSI'.split('').forEach((e,i)=>{
+			Object.defineProperty(this._HSI,e,{
+				enumerable: true,
+				configurable: false,
+				get: ()=>this._HSI[i],
+				set: (v)=>{
+					this._HSI[i]=v;
+					this._refresh('HSI');
+				}
+			});
+		});
+		Object.seal(this._HSI);
+
+		// The CIE-XYZ space is R+^3
+		// No direct alteration, no getter and setter
+		this._XYZ=[0,0,0];
+		'XYZ'.split('').forEach((e,i)=>{
+			Object.defineProperty(this._XYZ,e,{
+				enumerable: true,
+				configurable: false,
+				get: ()=>this.XYZ[i],
+				set: (v)=>{}
+			});
+		});
+		Object.seal(this._XYZ);
+
+		// The CIE-L*a*b* space is R+^3
+		// No direct alteration, no getter and setter
+		this._LAB=[0,0,0];
+		'LAB'.split('').forEach((e,i)=>{
+			Object.defineProperty(this._LAB,e,{
+				enumerable: true,
+				configurable: false,
+				get: ()=>this.LAB[i],
+				set: (v)=>{}
+			});
+		});
+		Object.seal(this._LAB);
+
+		if (c) this.SRGB=c;
+	} // end of constructor
+
+	get RGB() {return this._RGB;}
+	set RGB(c) {
+		if (Array.isArray(c)) {
+			this._RGB.forEach((e,i,a)=>a[i]=c[i]);
+			this._refresh('RGB');
+		}
+	}
+
+	get SRGB() {return '#'+this._SRGB.map(v=>Math.round(v*255+256).toString(16).substring(1)).join('');}
+	set SRGB(c) {
+		if (Array.isArray(c)) {
+			this._SRGB.forEach((e,i,a)=>a[i]=c[i]);
+			this._refresh('SRGB');
+		} else if (typeof c=='string'||c instanceof String) {
+			c.match(/#(..)(..)(..)/).slice(1).forEach((e,i)=>this._SRGB[i]=Number('0x'+e)/255);
+			this._refresh('SRGB');
+		}
+	}
+
+	get HSI() {return this._HSI;}
+	set HSI(c) {
+		if (Array.isArray(c)) {
+			this._HSI.forEach((e,i,a)=>a[i]=c[i]);
+			this._refresh('HSI');
+		}
+	}
+
+	get XYZ() {return this._XYZ;}
+	set XYZ(c) {}
+
+	get LAB() {return this._LAB;}
+	set LAB(c) {}
+
+}
+
+Color.prototype._refresh=function(from,to) {
+	const S0=0.00313066844250060782371;
+	const from_RGB=(to)=>{
+		switch (to) {
+			case 'SRGB':
+				this._SRGB.forEach((e,i,a)=>{
+					const S=this._RGB[i];
+					a[i]=S>S0?1.055*S**(1/2.4)-0.055:12.92*S;
+				});
+				break;
+			case 'HSI':
+				const [R,G,B]=this._RGB;
+				const I=(R+G+B)/3;
+				const S=I>0?1-Math.min(R,G,B)/I:0;
+				const theta=Math.acos((2*R-G-B)/2/Math.sqrt(R*R+G*G+B*B-R*G-G*B-B*R))*180/Math.PI;
+				const H=B>G?360-theta:theta;
+				[this._HSI[0],this._HSI[1],this._HSI[2]]=[H,S,I];
+				break;
+			case 'XYZ':
+				[	[33786752/81924984,29295110/81924984,14783675/81924984],
+					[8710647/40962492,29295110/40962492,2956735/40962492],
+					[4751262/245774952,29295110/245774952,233582065/245774952]
+				].forEach((row,i)=>{
+					this._XYZ[i]=row.reduce((a,v,j)=>a+v*this._RGB[j],0)
+				});
+				break;
+			default:
+				from_RGB('SRGB');
+				from_RGB('HSI');
+				from_RGB('XYZ');
+				from_XYZ('LAB');
+		}
+	}
+
+	const from_SRGB=(to)=>{
+	const E0=0.04044823627710785308233;
+		switch (to) {
+			case 'RGB':
+				this._RGB.forEach((e,i,a)=>{
+					const E=this._SRGB[i];
+					a[i]=E>E0?((E+0.055)/1.055)**2.4:E/12.92;
+				});
+				break;
+			default:
+				from_SRGB('RGB');
+				from_RGB('HSI');
+				from_RGB('XYZ');
+				from_XYZ('LAB');
+		}
+	}
+
+	const from_HSI=(to)=>{
+		switch (to) {
+			case 'RGB':
+				break;
+			default:
+				from_HSI('RGB');
+				from_RGB('SRGB');
+				from_RGB('XYZ');
+				from_XYZ('LAB');
+		}
+	}
+
+	const from_XYZ=(to)=>{
+		switch (to) {
+			case 'LAB':
+				// normalization
+				var [X,Y,Z]=this._XYZ.map((e,i)=>e/whitePoint._XYZ[i]);
+				// CIE-XYZ to CIE-L*a*b*
+				const epsilon=216/24389;
+				const kappa=841/108;
+				[X,Y,Z]=[X,Y,Z].map(t=>t>epsilon?t**(1/3):kappa*t+4/29);
+				const L=116*Y-16;
+				const a=500*(X-Y);
+				const b=200*(Y-Z);
+				[this._LAB[0],this._LAB[1],this._LAB[2]]=[L,a,b];
+				break;
+			default:
+				from_XYZ('LAB');
+		}
+	}
+
+	const from_Lab=(to)=>{
+	}
+
+	switch (from) {
+		case 'RGB': from_RGB(to); break;
+		case 'SRGB': from_SRGB(to); break;
+		case 'HSI': from_HSI(to); break;
+		case 'XYZ': from_XYZ(to); break;
+		case 'LAB': from_LAB(to); break;
+	}
+};
+
+// Observer = 2°, Illuminant = D65
+const whitePoint=new Color;
+whitePoint.SRGB='#FFFFFF';
+
+function euclid_len() {
+	return Math.sqrt(Array.from(arguments).reduce((a,v)=>a+v*v,0));
+}
+
+function colorDistance(c1,c2) {
+	// I have tried a lot of other methods and found that most of them does not work at all.
+	// The following thus are commented out but kept for future reference.
+	/*
+	HSI distance:
+	const i1=(r1+g1+b1)/3;
+	const s1=i1==0?0:1-Math.min(r1,g1,b1)/i1;
+	const theta1=Math.acos((r1-g1/2-b1/2)/Math.sqrt(r1*r1+g1*g1+b1*b1-r1*g1-g1*b1-b1*r1));
+	const h1=b1>g1?Math.PI-theta1:theta1;
+	const i2=(r2+g2+b2)/3;
+	const s2=i2==0?0:1-Math.min(r2,g2,b2)/i2;
+	const theta2=Math.acos((r2-g2/2-b2/2)/Math.sqrt(r2*r2+g2*g2+b2*b2-r2*g2-g2*b2-b2*r2));
+	... not finished.
+
+	Simple weighted RGB distance:
+	var [dR,dG,dB]=[r1-r2,g1-g2,b1-b2];
+	return r1+r2<256?2*dR*dR+4*dG*dG+3*dB*dB:3*dR*dR+4*dG*dG+2*dB*dB;
+	*/
+
+	c1=(c1 instanceof Color)&&c1||new Color(c1);
+	c2=(c2 instanceof Color)&&c2||new Color(c2);
+
+	const [L1,a1,b1]=c1.LAB;;
+	const [L2,a2,b2]=c2.LAB;
+
+	const L_avg=(L1+L2)/2;
+	const C1=euclid_len(a1,b1);
+	const C2=euclid_len(a2,b2);
+	const C_avg=(C1+C2)/2;
+	const G_plus_1=1.5-0.5/Math.sqrt(1+(25/C_avg)**7);
+	const a1_dash=a1*G_plus_1;
+	const a2_dash=a2*G_plus_1;
+	const C1_dash=euclid_len(a1_dash,b1);
+	const C2_dash=euclid_len(a2_dash,b2);
+	const C_dash_avg=(C1_dash+C2_dash)/2;
+	// The original definition for Hue requires h in [0°, 360°].
+	// We will accommodate to this in later calculations.
+	// Also, JavaScript atan2 takes care of a=b=0 already.
+	const h1=Math.atan2(b1,a1_dash);
+	const h2=Math.atan2(b2,a2_dash);
+	const dh=h2-h1;
+	// The original definition for dh in CIE-L*a*b* requires dh in [-180°, 180°].
+	// However, subsequent calculations use dh only once involving sin(dh/2),
+	// which implies that we only need to adjust when |dh|>pi and add a negative sign afterwards.
+	const signFlag=Math.abs(dh)>Math.PI?-1:1;
+	const dH_dash=2*Math.sqrt(C1_dash*C2_dash)*Math.sin(dh/2)*signFlag;
+	// If we do not guarantee the average Hue to fall into correct answer,
+	// we can still make use of signFlag to calculate T correctly,
+	// i.e., T=1-0.17*T1*signFlag+0.24*T2+0.32*T3*signFlag-0.20*T4.
+	// But we need the average Hue to be completely correct to calculate RT later,
+	// and hence we make sure that this value is correct and within [0, 2π] first.
+	var H_avg=(h1+h2)/2;
+	if (signFlag<0) {H_avg+=Math.PI;
+	} else if (H_avg<0) {H_avg+=2*Math.PI;
+	}
+	const [T1,T2,T3,T4]=[H_avg-Math.PI/6,2*H_avg,3*H_avg+Math.PI/30,4*H_avg-Math.PI*7/20]
+		.map(Math.cos);
+	const T=1-0.17*T1+0.24*T2+0.32*T3-0.20*T4;
+	const dL=L2-L1;
+	const dC_dash=C2_dash-C1_dash;
+	const L_diff_sq=L_avg*L_avg-100*L_avg+2500;
+	const SL=1+0.015*L_diff_sq/Math.sqrt(20+L_diff_sq);
+	const SC=1+0.045*C_dash_avg;
+	const SH=1+0.015*C_dash_avg*T;
+	const RC=2/Math.sqrt(1+(25/C_dash_avg)**7);
+	const RT=-RC*Math.sin(Math.PI/3/Math.exp(Math.exp((36*H_avg/5/Math.PI-11)**2)));
+
+	// kL, kC and kH are sensitivity constants, and are suggested to be unity.
+	// Increase these values will decrease the sensitivity of the respective components.
+	const [kL,kC,kH]=[1,1,1];
+
+	const dE_L=dL/kL/SL;
+	const dE_C=dC_dash/kC/SC;
+	const dE_H=dH_dash/kH/SH;
+	const dE_R=RT*dE_C*dE_H;
+
+	const dE_00=Math.sqrt([dE_L,dE_C,dE_H].reduce((a,v)=>a+v*v,0)+dE_R);
+
+	return dE_00;
+}
+
+function colorName(c) {
+	// RGB: string of the format #RRGGBB
+	// return: the name of the color that is closest to the indicated color.
+	const colorList=CommonColor22; // change this to change your preferred color names
+	return colorList.reduce((a,v)=>{
+		const d1=colorDistance(a.split(',')[1],c);
+		const d2=colorDistance(v.split(',')[1],c);
+		return d1<d2?a:v;
+	}).split(',')[0];
+}
+
+function fillControlPane() {
+	const controlPane=document.getElementById('controlPane');
+	for (const cat in themes) {
+		const a=document.createElement('a');
+		a.appendChild(document.createTextNode(cat));
+		a.href='#';
+		a.onclick=()=>updateThemesDiv(cat);
+		controlPane.appendChild(a);
+	}
+	const btn=document.createElement('button');
+	btn.id='createColorResource';
+	btn.innerHTML='Create Color Resource';
+	controlPane.appendChild(btn);
+}
+
+function themeDiv(theme) {
+// If theme is an array, returns div#themes that contains the themes described in theme.
+// Otherwise, returns div.theme that contains the colors of the theme.
+	const baseDiv=document.createElement('div');
+	if (Array.isArray(theme)) {
+		baseDiv.id='themes';
+
+		const ackDiv=document.createElement('div');
+		ackDiv.innerHTML='Acknowledgement: ';
+		const a=document.createElement('a');
+		a.innerHTML=theme[0];
+		a.setAttribute('target','_blank');
+		a.setAttribute('re','noopener noreferrer');
+		a.href=theme[0];
+		ackDiv.appendChild(a);
+		baseDiv.appendChild(ackDiv);
+
+		for (var i=1;i<theme.length;i++) {
+			baseDiv.appendChild(themeDiv(theme[i]));
+		}
+	} else {
+		baseDiv.classList.add('theme');
+
+		var [themeName,rgbColors]=theme.split(',');
+		themeName=`<input type="checkbox" value="${theme}"> ${themeName}`;
+		baseDiv.innerHTML='<div>'+themeName+'</div>';
+
+		rgbColors=rgbColors.match(/#[^#]*/g);
+		rgbColors.forEach(c=>{
+			const div=document.createElement('div');
+			div.style.backgroundColor=c;
+			baseDiv.appendChild(div);
+		});
+	}
+	return baseDiv;
+}
+
+function updateThemesDiv(cat) {
+// cat: the string that describes the category of themes
+	const oldDiv=document.getElementById('controlPane').nextElementSibling;
+	const newDiv=themeDiv(themes[cat]);
+	oldDiv.parentNode.replaceChild(newDiv,oldDiv);
+	const btn=document.getElementById('createColorResource');
+	btn.onclick=()=>createColorResource(cat);
+}
+
+function createColorResource(cat) {
+	const selectedThemes=Array
+		.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+		.map(e=>e.value);
+	const s=[];
+	for (const t of selectedThemes) {
+		var [themeName,rgbColors]=t.split(',');
+		if (!isNaN(themeName)) themeName=cat+themeName;
+		s.push(`object ${camelCase(themeName)} {`);
+		const cSet={};
+		rgbColors.match(/#[^#]*/g).forEach(c=>{
+			const cName=colorName(c);
+			if (cSet.hasOwnProperty(cName)) cSet[cName].push(c);
+			else cSet[cName]=[c];
+		});
+		for (const cName in cSet) {
+			cSet[cName].sort((c1,c2)=>
+				(new Color(c2)).LAB.L-(new Color(c1)).LAB.L
+			);
+			for (var i=0;i<cSet[cName].length;i++) {
+				s.push(`\tval ${pascalCase(cName)+(cSet[cName].length>1?i+1:'')
+					} = Color(0xFF${cSet[cName][i].substring(1)})`
+				);
+			}
+		}
+		s.push(`}`);
+	}
+	alert(s.join('\n'));
+}
+
+function main() {
+	fillControlPane();
+}
+
+</script>
+</head>
+<body onload="main();">
+	<div id="controlPane" style="width: 100%"></div>
+	<h1>
+		Select the theme category above, then check on the themes that you like,
+		then create the color resources in the clipboard.
+	</h1>
+</body>
+</html>
